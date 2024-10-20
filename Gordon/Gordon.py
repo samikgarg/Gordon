@@ -49,6 +49,12 @@ class State(rx.State):
             self.image_url = generate_image(step_text)
             self.images.append(self.image_url)
 
+    def exit_recipe(self):
+        self.current_step = -1
+        return rx.redirect(
+            "/recipe"
+        )
+
     def next_step(self):
         # Move to the next step and update the image
         if self.current_step < len(self.steps) - 1:
@@ -691,7 +697,7 @@ def create_exit_recipe_button():
         color="#ffffff",
         transition_property="background-color, border-color, color, fill, stroke, opacity, box-shadow, transform",
         transition_timing_function="cubic-bezier(0.4, 0, 0.2, 1)",
-        on_click=rx.redirect("/")
+        on_click=State.exit_recipe
     )
 
 
