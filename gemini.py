@@ -12,9 +12,11 @@ def extract_steps(text):
     steps = re.findall(r'<step>(.*?)</step>', text)
     return [f"Step {i+1}/{len(steps)}: {step}" for i, step in enumerate(steps)]
     
-
+#print(generate('i want to make a pasta with tomato sauce and onions. I want the pasta to be spicy and please make sure that it is not salty.'))
 #steps = generate("I am kinda feeling a spicy dish. I have a couple tomatoes and some rice in the fridge and I want to use it. I am alergic to nuts. I want to eat something tasty that I can make with low effort.")
 #steps_arr = extract_steps(steps)
 #for i, step in enumerate(steps_arr):
     #print(f"Step {i+1}/{len(steps_arr)}: {step}")
     #input()
+
+    
