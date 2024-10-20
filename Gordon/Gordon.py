@@ -1,3 +1,5 @@
+#5ff06bfd-f4ab-4672-9ccc-3433ff69d488
+
 import reflex as rx
 import sys
 import os
@@ -5,6 +7,10 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from gemini import generate as generate_recipe, extract_steps, extract_ingredients, extract_des, extract_name
 from image import generate as generate_image, generate_food
+from call_to_groq import groqify
+from text_to_speech import speak_transcript
+import concurrent.futures
+import threading
 
 # Define the app state
 class State(rx.State):
@@ -12,28 +18,41 @@ class State(rx.State):
     name = ""
     description=""
     steps = []
+    groqified_steps=[]
     ingredients=[]
     current_step = -1
     generated_steps = -1
     total_steps = 0
     image_url = ""
+    current_groq_step = ""
     images=[]
     food_url=""
+    started = True
 
 
     def generate_recipe(self):
         # Use gemini.py to generate the recipe
-        recipe_text = generate_recipe(self.prefs)
-        self.name = extract_name(recipe_text)
-        self.description = extract_des(recipe_text)
-        recipe_image = generate_food(self.name, self.description)
-        self.food_url = recipe_image
-        self.steps = extract_steps(recipe_text)
-        self.ingredients = extract_ingredients(recipe_text)
+        #speak_transcript("test")
+        def init_steps():
+            recipe_text = generate_recipe(self.prefs)
+            self.name = extract_name(recipe_text)
+            self.description = extract_des(recipe_text)
+            self.steps = extract_steps(recipe_text)
+            self.ingredients = extract_ingredients(recipe_text)
+        
+        def init_img():
+            recipe_image = generate_food(self.name, self.description)
+            self.food_url = recipe_image
+
+        init_steps()
+        init_img()
+
         self.current_step = -1
         self.generated_steps = -1
         self.total_steps = len(self.steps)
         self.images = []
+        self.groqified_steps = []
+        self.started = True
         print(self.name)
         print(self.description)
         print(self.ingredients)
@@ -41,6 +60,9 @@ class State(rx.State):
         return rx.redirect(
             "/recipe"
         )
+    
+    def say_step(self):
+        speak_transcript(self.groqified_steps[self.current_step])
 
     def update_image(self):
         # Use image.py to generate an image for the current step
@@ -48,6 +70,12 @@ class State(rx.State):
             step_text = self.steps[self.current_step]
             self.image_url = generate_image(step_text)
             self.images.append(self.image_url)
+    
+    def update_groqified_steps(self):
+        if self.steps:
+            step_text = f"Step {self.current_step+1}: {self.steps[self.current_step]}"
+            self.current_groq_step = groqify(step_text)
+            self.groqified_steps.append(self.current_groq_step)
 
     def exit_recipe(self):
         self.current_step = -1
@@ -59,17 +87,24 @@ class State(rx.State):
         # Move to the next step and update the image
         if self.current_step < len(self.steps) - 1:
             if self.current_step == self.generated_steps:
+                if (self.started):
+                    self.started = False
                 self.current_step += 1
                 self.generated_steps += 1
                 self.update_image()
+                self.update_groqified_steps()
+                thread = threading.Thread(target=self.say_step)
+                thread.start()
             else:
                 self.current_step += 1
                 self.image_url = self.images[self.current_step]
+                self.current_groq_step = self.groqified_steps[self.current_step]
 
     def previous_step(self):
         if self.current_step > 0:
             self.current_step -= 1
             self.image_url = self.images[self.current_step]
+            self.current_groq_step = self.groqified_steps[self.current_step]
 
     def search_on_key_down(self, event):
         # Check if event has a 'key' attribute and if 'Enter' is pressed
@@ -735,7 +770,7 @@ def create_recipe_step():
     return rx.box(
         # Heading for the current step number
         rx.heading(
-            f"Step {State.current_step + 1}/{State.total_steps}: {State.steps[State.current_step]}",  # Dynamic step title
+            f"Step {State.current_step + 1}/{State.total_steps}",  # Dynamic step title
             class_name="text-amber-700",
             font_weight="600",
             margin_bottom="1rem",
@@ -743,6 +778,17 @@ def create_recipe_step():
             line_height="2.25rem",
             text_align="center",
             as_="h2",
+        ),
+
+        rx.heading(
+            f"{State.groqified_steps[State.current_step]}",  # Dynamic step title
+            class_name="text-amber-700",
+            font_weight="300",
+            margin_bottom="1rem",
+            font_size="1.075rem",
+            line_height="2.25rem",
+            text_align="center",
+            as_="h4",
         ),
         
         # Image for the current step
@@ -817,7 +863,6 @@ def create_recipe_step():
         border_radius="0.5rem",
         box_shadow="0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     )
-
 
 def create_recipe_page():
     """Create the main recipe page with a title and dynamic recipe steps."""
