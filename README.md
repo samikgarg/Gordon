@@ -6,12 +6,12 @@ Gordon is an **AI-powered recipe generation app** that creates **customized reci
 ---
 
 ## 🚀 Features
-✅ **AI-Generated Recipes** – Enter available ingredients, and the app generates **personalized recipes**.  
-✅ **DALL·E-Powered Images** – Generate **AI-created food images** for each dish.  
-✅ **Gemini-Powered Recipe Enhancements** – Improve details with cooking tips and health insights.  
-✅ **Groq for Enhanced Recipe Details** – Adds **nutritional breakdowns** and **alternative ingredient suggestions**.  
-✅ **Intuitive UI** – A clean, user-friendly interface for easy navigation.  
-✅ **Voice Interaction** – Speak ingredients instead of typing.  
-✅ **Save & Share Recipes** – Store favorite recipes and share them with friends.  
+- **AI-Generated Recipes** – Enter available ingredients, and the app generates **personalized recipes**.  
+- **DALL·E-Powered Images** – Generate **AI-created food images** for each dish.  
+- **Gemini-Powered Recipe Enhancements** – Improve details with cooking tips and health insights.  
+- **Groq for Enhanced Recipe Details** – Adds **nutritional breakdowns** and **alternative ingredient suggestions**.  
+- **Intuitive UI** – A clean, user-friendly interface for easy navigation.  
+- **Voice Interaction** – Speak ingredients instead of typing.  
+- **Save & Share Recipes** – Store favorite recipes and share them with friends.  
 
 ---
